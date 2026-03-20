@@ -1,0 +1,89 @@
+src/
+├─ app/
+│  ├─ page.jsx
+│  ├─ layout.jsx
+│  ├─ globals.css
+│  │
+│  ├─ register/
+│  │  └─ page.jsx
+│  │
+│  ├─ enrollment/
+│  │  └─ page.jsx
+│  │
+│  ├─ login/
+│  │  └─ page.jsx
+│  │
+│  ├─ result/
+│  │  └─ page.jsx
+│  │
+│  ├─ admin/
+│  │  ├─ page.jsx
+│  │  ├─ users/
+│  │  │  └─ page.jsx
+│  │  ├─ face-status/
+│  │  │  └─ page.jsx
+│  │  ├─ login-logs/
+│  │  │  └─ page.jsx
+│  │  └─ stats/
+│  │     └─ page.jsx
+│  │
+│  └─ api/
+│     ├─ auth/
+│     │  ├─ register/route.js
+│     │  └─ login/route.js
+│     ├─ face/
+│     │  ├─ enroll/route.js
+│     │  ├─ verify/route.js
+│     │  └─ status/route.js
+│     ├─ users/route.js
+│     ├─ logs/route.js
+│     └─ stats/route.js
+│
+├─ components/
+│  ├─ ui/
+│  │  ├─ Button.jsx
+│  │  ├─ Input.jsx
+│  │  ├─ Card.jsx
+│  │  ├─ Table.jsx
+│  │  └─ StatusBadge.jsx
+│  │
+│  ├─ layout/
+│  │  ├─ Navbar.jsx
+│  │  ├─ Sidebar.jsx
+│  │  └─ Footer.jsx
+│  │
+│  ├─ face/
+│  │  ├─ CameraCapture.jsx
+│  │  ├─ FacePreview.jsx
+│  │  ├─ EnrollmentGuide.jsx
+│  │  ├─ LoginGuide.jsx
+│  │  └─ VerificationResult.jsx
+│  │
+│  └─ admin/
+│     ├─ DashboardCards.jsx
+│     ├─ UserTable.jsx
+│     ├─ FaceStatusTable.jsx
+│     ├─ LoginLogTable.jsx
+│     └─ PassFailChart.jsx
+│
+├─ lib/
+│  ├─ db.js
+│  ├─ auth.js
+│  ├─ face-api.js
+│  ├─ validators.js
+│  └─ utils.js
+│
+├─ services/
+│  ├─ authService.js
+│  ├─ faceService.js
+│  ├─ userService.js
+│  ├─ logService.js
+│  └─ statsService.js
+│
+├─ hooks/
+│  ├─ useCamera.js
+│  ├─ useFaceCapture.js
+│  └─ useAuth.js
+│
+└─ data/
+   └─ mockData.js
