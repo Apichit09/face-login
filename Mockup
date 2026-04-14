@@ -7,9 +7,6 @@ src/
 │  ├─ register/
 │  │  └─ page.jsx
 │  │
-│  ├─ enrollment/
-│  │  └─ page.jsx
-│  │
 │  ├─ login/
 │  │  └─ page.jsx
 │  │
@@ -48,7 +45,6 @@ src/
 │  │  └─ StatusBadge.jsx
 │  │
 │  ├─ layout/
-│  │  ├─ Navbar.jsx
 │  │  ├─ Sidebar.jsx
 │  │  └─ Footer.jsx
 │  │
