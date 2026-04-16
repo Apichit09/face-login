@@ -37,6 +37,7 @@ export async function verifyFaceLogin({ username, image }) {
   );
 
   if (rows.length === 0) {
+    // กรณีนี้ถือเป็น FAIL จริง เพราะบัญชียังไม่มีข้อมูลอ้างอิง
     await query(
       `INSERT INTO login_logs (user_id, result, similarity_score, inference_time_ms)
        VALUES (?, ?, ?, ?)`,
@@ -45,7 +46,7 @@ export async function verifyFaceLogin({ username, image }) {
 
     return {
       result: "FAIL",
-      similarity: "0.00",
+      similarity: "0.0000",
       threshold: "0.60",
       inferenceTime: 0,
       message: "บัญชีนี้ยังไม่ได้ลงทะเบียนใบหน้า",
@@ -70,19 +71,28 @@ export async function verifyFaceLogin({ username, image }) {
 
   const inferenceTime = Date.now() - start;
 
+  // 4) ถ้าภาพไม่ผ่าน Quality Gate
+  // ไม่ควรนับเป็น FAIL เชิง verification
   if (!res.ok || !data.success || !data.embedding) {
-    await query(
-      `INSERT INTO login_logs (user_id, result, similarity_score, inference_time_ms)
-       VALUES (?, ?, ?, ?)`,
-      [user.user_id, "FAIL", 0, inferenceTime]
-    );
+    const qualityMessage =
+      data?.message || data?.detail || "ภาพไม่ผ่านเกณฑ์คุณภาพ";
 
-    throw new Error(data.detail || data.message || "ArcFace embed failed");
+    return {
+      result: "QUALITY_FAILED",
+      similarity: "0.0000",
+      threshold: Number(
+        process.env.NEXT_PUBLIC_THRESHOLD || 0.6
+      ).toFixed(2),
+      inferenceTime,
+      reasonCode: data?.reason_code || "QUALITY_GATE_FAILED",
+      message: qualityMessage,
+      metrics: data?.metrics || {},
+    };
   }
 
   const currentEmbedding = data.embedding;
 
-  // 4) เทียบกับ embeddings ที่ลงทะเบียนไว้ทั้งหมด แล้วเอาคะแนนสูงสุด
+  // 5) เทียบกับ embeddings ที่ลงทะเบียนไว้ทั้งหมด แล้วเอาคะแนนสูงสุด
   let maxSimilarity = 0;
 
   for (const row of rows) {
@@ -108,7 +118,7 @@ export async function verifyFaceLogin({ username, image }) {
   const threshold = Number(process.env.NEXT_PUBLIC_THRESHOLD || 0.6);
   const result = maxSimilarity >= threshold ? "PASS" : "FAIL";
 
-  // 5) บันทึก log
+  // 6) บันทึก log เฉพาะ verification attempt ที่ผ่าน Quality Gate แล้ว
   await query(
     `INSERT INTO login_logs (user_id, result, similarity_score, inference_time_ms)
      VALUES (?, ?, ?, ?)`,
@@ -124,5 +134,6 @@ export async function verifyFaceLogin({ username, image }) {
       result === "PASS"
         ? "ระบบยืนยันตัวตนด้วยใบหน้าถูกต้อง"
         : "ใบหน้าไม่ตรงกับข้อมูลที่ลงทะเบียนไว้",
+    metrics: data?.metrics || {},
   };
 }

@@ -3,11 +3,17 @@ export default function VerificationResult({ result }) {
 
   return (
     <>
-      <div className={`result-badge ${!isPass ? "fail" : ""}`}>
-        {isPass ? "✓" : "✕"}
+      <div className="mb-2 flex justify-center items-center">
+        <img
+          src={isPass ? "/icon/check.gif" : "/icon/shield.gif"}
+          alt={isPass ? "success" : "error"}
+          className="h-21 w-21 object-contain"
+        />
       </div>
 
-      <h1 className="title">{isPass ? "เข้าสู่ระบบสำเร็จ" : "เข้าสู่ระบบไม่สำเร็จ"}</h1>
+      <h1 className="title">
+        {isPass ? "เข้าสู่ระบบสำเร็จ" : "เข้าสู่ระบบไม่สำเร็จ"}
+      </h1>
       <p className="subtitle">
         {isPass
           ? "ระบบยืนยันตัวตนด้วยใบหน้าถูกต้อง"
@@ -32,9 +38,17 @@ export default function VerificationResult({ result }) {
       </div>
 
       <div className={isPass ? "success-box" : "info-box"}>
-        {isPass
-          ? "ยินดีต้อนรับเข้าสู่ระบบ ใบหน้าของคุณตรงกับฐานข้อมูลที่ลงทะเบียนไว้"
-          : "กรุณาลองใหม่อีกครั้ง โดยให้ใบหน้าอยู่กึ่งกลางและมีแสงสว่างเพียงพอ"}
+        {isPass ? (
+          <>
+            ยินดีต้อนรับเข้าสู่ระบบ <br />
+            ใบหน้าของคุณตรงกับฐานข้อมูลที่ลงทะเบียนไว้
+          </>
+        ) : (
+          <>
+            กรุณาลองใหม่อีกครั้ง <br />
+            โดยให้ใบหน้าอยู่กึ่งกลางและมีแสงสว่างเพียงพอ
+          </>
+        )}
       </div>
     </>
   );
