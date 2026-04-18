@@ -90,7 +90,14 @@ export default function CameraCapture({ onCapture, onCancel }) {
     canvas.height = video.videoHeight || 480;
 
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
     canvas.toBlob(
       (blob) => {
@@ -128,6 +135,7 @@ export default function CameraCapture({ onCapture, onCancel }) {
             playsInline
             muted
             className="block max-h-[420px] w-full object-cover"
+            style={{ transform: "scaleX(-1)" }}
           />
         </div>
       )}

@@ -2,11 +2,12 @@
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from typing import List
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 import io
 import cv2
 import time
+import math
 
 from insightface.app import FaceAnalysis
 
@@ -16,9 +17,15 @@ app = FastAPI()
 face_app = FaceAnalysis(name="buffalo_l")
 face_app.prepare(ctx_id=-1, det_size=(320, 320))
 
+
 # Utility Functions
 def read_image(file_bytes: bytes) -> np.ndarray:
-    image = Image.open(io.BytesIO(file_bytes)).convert("RGB")
+    """
+    อ่านรูปและแก้ EXIF orientation
+    สำคัญมากสำหรับรูปจากมือถือ
+    """
+    image = Image.open(io.BytesIO(file_bytes))
+    image = ImageOps.exif_transpose(image).convert("RGB")
     return np.array(image)
 
 
@@ -90,13 +97,24 @@ def compute_image_metrics(img_rgb: np.ndarray):
 
 
 def check_face_pose(face):
+    """
+    วัดความเอียงจาก 'มุมของเส้นเชื่อมตา' (องศา)
+    ดีกว่าการใช้ส่วนต่างพิกเซลของแกน Y ตรง ๆ
+    """
     eyes_visible = True
     tilt_score = 0.0
 
     if hasattr(face, "kps") and face.kps is not None and len(face.kps) >= 2:
         left_eye = face.kps[0]
         right_eye = face.kps[1]
-        tilt_score = abs(float(left_eye[1] - right_eye[1]))
+
+        dx = float(right_eye[0] - left_eye[0])
+        dy = float(right_eye[1] - left_eye[1])
+
+        if abs(dx) < 1e-6:
+            tilt_score = 90.0
+        else:
+            tilt_score = abs(math.degrees(math.atan2(dy, dx)))
     else:
         eyes_visible = False
 
@@ -109,7 +127,7 @@ def check_face_pose(face):
 def check_quality(img_rgb: np.ndarray, face):
     """
     Quality Gate แบบผ่อนปรนขึ้น
-    เพื่อให้ระบบใช้งานได้จริงก่อน
+    และใช้มุมเอียงจริงแทนพิกเซลดิบ
     """
 
     face_area_ratio = get_face_area_ratio(img_rgb, face)
@@ -135,7 +153,7 @@ def check_quality(img_rgb: np.ndarray, face):
 
     MIN_BRIGHTNESS = 35
     MIN_BLUR_SCORE = 25
-    MAX_TILT_SCORE = 40
+    MAX_TILT_SCORE = 15   # เดิมควรแก้ให้เป็นองศา
 
     # เล็กมากจริงค่อย reject
     if face_area_ratio < MIN_FACE_AREA_RATIO_HARD:
@@ -179,7 +197,7 @@ def check_quality(img_rgb: np.ndarray, face):
         return (
             False,
             "FACE_TILT_TOO_MUCH",
-            "ใบหน้าเอียงมากเกินไป กรุณาหันหน้าให้ตรงมากขึ้น",
+            f"ใบหน้าเอียงมากเกินไป ({tilt_score}°) กรุณาหันหน้าให้ตรงมากขึ้น",
             metrics,
         )
 

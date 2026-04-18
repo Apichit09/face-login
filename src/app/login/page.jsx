@@ -205,10 +205,12 @@ export default function LoginPage() {
       const data = await res.json();
       setProgress(100);
 
-      if (!res.ok || !data.success) {
-        openErrorPopup(data.message || "เข้าสู่ระบบด้วยรหัสผ่านไม่สำเร็จ");
-        return;
-      }
+if (!res.ok || !data.success) {
+  setPasswordOpen(false);
+  setPassword("");
+  openErrorPopup(data.message || "รหัสผ่านไม่ถูกต้อง");
+  return;
+}
 
       setPasswordOpen(false);
 

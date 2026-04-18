@@ -21,7 +21,7 @@ export async function registerUserWithArcFace({ username, password, images }) {
 
   const passwordHash = hashPassword(password);
 
-  // 1) สร้าง user ก่อน
+  // สร้าง user ก่อน
   const insertUser = await query(
     "INSERT INTO users (username, password_hash) VALUES (?, ?)",
     [username, passwordHash]
@@ -30,7 +30,7 @@ export async function registerUserWithArcFace({ username, password, images }) {
   const userId = insertUser.insertId;
 
   try {
-    // 2) ส่งรูปไป enroll ที่ Python backend
+    // ส่งรูปไป enroll ที่ Python backend
     const form = new FormData();
     form.append("username", username);
 
@@ -64,7 +64,7 @@ export async function registerUserWithArcFace({ username, password, images }) {
       throw new Error("ระบบไม่ได้ embeddings ครบ 4 รูป");
     }
 
-    // 3) บันทึก embeddings ลงฐานข้อมูล
+    // บันทึก embeddings ลงฐานข้อมูล
     for (const emb of data.embeddings) {
       await query(
         `INSERT INTO face_embeddings (user_id, embedding_vector, model_name)
@@ -79,7 +79,7 @@ export async function registerUserWithArcFace({ username, password, images }) {
       message: data.message || "ลงทะเบียนสำเร็จ",
     };
   } catch (error) {
-    // 4) cleanup user ที่เพิ่งสร้าง ถ้า enroll ไม่ผ่าน
+    // cleanup user ที่เพิ่งสร้าง ถ้า enroll ไม่ผ่าน
     try {
       await query("DELETE FROM face_embeddings WHERE user_id = ?", [userId]);
       await query("DELETE FROM users WHERE user_id = ?", [userId]);

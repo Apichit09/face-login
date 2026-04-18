@@ -18,7 +18,7 @@ export async function verifyFaceLogin({ username, image }) {
     throw new Error("กรุณาอัปโหลดภาพใบหน้า");
   }
 
-  // 1) หา user
+  // หา user
   const users = await query(
     "SELECT user_id, username FROM users WHERE username = ?",
     [username]
@@ -30,7 +30,7 @@ export async function verifyFaceLogin({ username, image }) {
 
   const user = users[0];
 
-  // 2) ดึง embeddings อ้างอิง
+  // ดึง embeddings อ้างอิง
   const rows = await query(
     "SELECT embedding_vector FROM face_embeddings WHERE user_id = ?",
     [user.user_id]
@@ -53,7 +53,7 @@ export async function verifyFaceLogin({ username, image }) {
     };
   }
 
-  // 3) ส่งรูป login ไปให้ Python สร้าง embedding ปัจจุบัน
+  // ส่งรูป login ไปให้ Python สร้าง embedding ปัจจุบัน
   const form = new FormData();
   form.append("username", username);
   form.append("image", image, image.name || "login.jpg");
@@ -71,7 +71,7 @@ export async function verifyFaceLogin({ username, image }) {
 
   const inferenceTime = Date.now() - start;
 
-  // 4) ถ้าภาพไม่ผ่าน Quality Gate
+  // ถ้าภาพไม่ผ่าน Quality Gate
   // ไม่ควรนับเป็น FAIL เชิง verification
   if (!res.ok || !data.success || !data.embedding) {
     const qualityMessage =
@@ -92,7 +92,7 @@ export async function verifyFaceLogin({ username, image }) {
 
   const currentEmbedding = data.embedding;
 
-  // 5) เทียบกับ embeddings ที่ลงทะเบียนไว้ทั้งหมด แล้วเอาคะแนนสูงสุด
+  // เทียบกับ embeddings ที่ลงทะเบียนไว้ทั้งหมด แล้วเอาคะแนนสูงสุด
   let maxSimilarity = 0;
 
   for (const row of rows) {
@@ -118,7 +118,7 @@ export async function verifyFaceLogin({ username, image }) {
   const threshold = Number(process.env.NEXT_PUBLIC_THRESHOLD || 0.6);
   const result = maxSimilarity >= threshold ? "PASS" : "FAIL";
 
-  // 6) บันทึก log เฉพาะ verification attempt ที่ผ่าน Quality Gate แล้ว
+  // บันทึก log เฉพาะ verification attempt ที่ผ่าน Quality Gate แล้ว
   await query(
     `INSERT INTO login_logs (user_id, result, similarity_score, inference_time_ms)
      VALUES (?, ?, ?, ?)`,
